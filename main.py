@@ -16,24 +16,19 @@ model = genai.GenerativeModel('gemini-1.5-flash', system_instruction=store_instr
 @app.post("/webhook")
 async def receive_webhook(request: Request):
     data = await request.json()
-    
     if data.get("typeWebhook") == "incomingMessageReceived":
         sender_number = data["senderData"]["sender"]
         message_data = data.get("messageData", {})
-        
         if "textMessageData" in message_data:
             message_text = message_data["textMessageData"]["textMessage"]
             ai_reply = model.generate_content(message_text).text
-            
             send_url = f"https://api.green-api.com/waInstance{ID_INSTANCE}/sendMessage/{API_TOKEN_INSTANCE}"
             payload = {"chatId": sender_number, "message": ai_reply}
             requests.post(send_url, json=payload)
-            
         elif "audioMessageData" in message_data:
             send_url = f"https://api.green-api.com/waInstance{ID_INSTANCE}/sendMessage/{API_TOKEN_INSTANCE}"
             payload = {"chatId": sender_number, "message": "سمعت الفوكال تيعك، لحظة برك نرجعلك!"}
             requests.post(send_url, json=payload)
-            
     return {"status": "success"}
 
 @app.get("/")
